@@ -1,26 +1,54 @@
 const BASE_FRAME_STYLE = `
-html, body { padding: 0; margin: 0; border: 0; }
+html, body { padding: 0; margin: 0; border: 0; overflow: hidden; }
+body { display: flex; justify-content: center; }
+body > div { display: inline-block; }
 `;
 
 export class Frame {
     private _iframe: HTMLIFrameElement;
+    private _resizeObserver: ResizeObserver;
     
-    constructor(private _document: HTMLDocument) {
-        this._iframe = _document.createElement('iframe');
-        this._iframe.src = "javascript:;";
-        this._iframe.style.position = 'fixed';
+    constructor(private _parent: HTMLDivElement, private _resizeCallback: (r: DOMRectReadOnly) => void) {
+        if (!_parent.ownerDocument.contains(_parent)) {
+            throw "The parent element must be part of the document";
+        }
+
+        this._iframe = _parent.ownerDocument.createElement('iframe');
+        this._iframe.style.position = 'relative';
         this._iframe.style.visibility = 'hidden';
         this._iframe.style.border = '0px';
         this._iframe.style.display = 'block';
+        this._iframe.style.width = '100%';
+        this._iframe.style.height = '100%';
+        this._iframe.src = "javascript:;";
         this.acceptPointer = false;
-        _document.body.appendChild(this._iframe);
+
+        _parent.appendChild(this._iframe);
 
         if (!this.contentDocument.head) {
             this.contentDocument.appendChild(this.contentDocument.createElement('head'));
         }
+
         const style = this.contentDocument.createElement('style');
         style.innerText = BASE_FRAME_STYLE;
         this.head.appendChild(style);
+
+        const body = this.body;
+        const holder = this.contentDocument.createElement('div');
+        body.appendChild(holder);
+
+        this._resizeObserver = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                if (entry.target === holder) {
+                    _resizeCallback(holder.getBoundingClientRect());
+                }
+            }
+        });
+        this._resizeObserver.observe(holder);
+    }
+
+    get frameElement(): HTMLIFrameElement {
+        return this._iframe;
     }
 
     get contentDocument(): Document {

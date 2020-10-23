@@ -1,19 +1,15 @@
 import { Frame } from './frame';
+import { Dock, DockPosition } from './dock';
 
-export enum ToolbarPosition {
-    HIDDEN,
-    NORTH,
-    EAST,
-    SOUTH,
-    WEST,
-}
+export { DockPosition } from './dock';
 
 export class Toolbar {
     private _frame: Frame;
+    private _dock: Dock;
 
-    constructor(private _position: ToolbarPosition) {
-        this._frame = new Frame(document);
-        this._frame.body.innerHTML = "<div></div>";
+    constructor(private _position: DockPosition) {
+        this._dock = new Dock(document);
+        this._frame = this._dock.frame;
     }
 
     get rootNode() {
