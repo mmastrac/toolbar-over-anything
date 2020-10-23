@@ -1,4 +1,4 @@
-<html>
+<html translate="no">
     <head>
         <title>Basic Example</title>
         <meta charset="utf8" />
@@ -11,26 +11,27 @@
     </head>
     <body>
         <script>
-            const toolbar = new toa.Toolbar(toa.DockPosition.NORTH);
-            const root = toolbar.rootNode;
-            root.innerHTML = `
-            <style>
-                table {
-                    background-color: lightgray;
-                    border: 1px solid darkgray;
-                }
-                td {
-                    width: 1em;
-                    text-align: center;
-                }
-                td:hover {
-                    background-color: red;
-                }
-            </style>
-            <table>
-                <tr><td>Options:</td><td>a</td><td>b</td><td>c</td></tr>
-            </table>`;
-            toolbar.visible = true;
+            const toolbar = new toa.Toolbar(toa.DockPosition.NORTH, (toolbar) => {
+                const root = toolbar.rootNode;
+                root.innerHTML = `
+                <style>
+                    table {
+                        background-color: lightgray;
+                        border: 1px solid darkgray;
+                    }
+                    td {
+                        width: 1em;
+                        text-align: center;
+                    }
+                    td:hover {
+                        background-color: red;
+                    }
+                </style>
+                <table>
+                    <tr><td>Options:</td><td>a</td><td>b</td><td>c</td></tr>
+                </table>`;
+                toolbar.visible = true;
+            });
         </script>
 
         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore

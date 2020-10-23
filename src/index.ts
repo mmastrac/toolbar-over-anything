@@ -7,8 +7,8 @@ export class Toolbar {
     private _frame: Frame;
     private _dock: Dock;
 
-    constructor(private _position: DockPosition) {
-        this._dock = new Dock(document);
+    constructor(private _position: DockPosition, private _loadCallback: (_: Toolbar) => void) {
+        this._dock = new Dock(document, () => _loadCallback(this));
         this._frame = this._dock.frame;
     }
 

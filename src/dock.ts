@@ -14,24 +14,34 @@ export class Dock {
     private _overlay: HTMLDivElement;
     /// The frame itself
     private _frame: Frame;
+    private _style: HTMLStyleElement;
 
     private _overlayEntered: boolean = false;
     private _frameEntered: boolean = false;
 
     private _dockPosition: DockPosition = DockPosition.NORTH;
+    private _uniquifier;
 
-    constructor(private _document: HTMLDocument) {
+    constructor(private _document: HTMLDocument, private _loadCallback: () => void) {
+        // This is overkill for a unique ID
+        const array = new Uint8Array(8);
+        window.crypto.getRandomValues(array);
+        this._uniquifier = `tb${new Date().valueOf().toString(16)}${array.toString().replace(/,/g, '')}`;
+
         this._div = _document.createElement('div');
-        this._div.style.position = 'absolute';
-        this._div.style.userSelect = 'none';
+        this._div.id = `dock_${this._uniquifier}`;
+        this.updatePosition();
 
         this._overlay = _document.createElement('div');
-        this._overlay.style.position = 'absolute';
-        this._overlay.style.userSelect = 'none';
+        this._overlay.id = `overlay_${this._uniquifier}`;
 
-        this.updatePosition();
+        this._style = _document.createElement('style');
+        this._style.textContent = Dock._baseDockStyle(this._uniquifier);
+
+        this._div.append(this._overlay, this._style);
         document.body.appendChild(this._div);
-        this._frame = new Frame(this._div, (r) => {
+
+        this._frame = new Frame(this._div, this._loadCallback, (r) => {
             console.log("Rect = ", r);
             this._overlay.style.top = `${r.top}px`;
             this._overlay.style.left = `${r.left}px`;
@@ -40,32 +50,74 @@ export class Dock {
 
             this._div.style.height = `${r.bottom}px`;
         });
-        this._div.appendChild(this._overlay);
+        this._frame.frameElement.id = `iframe_${this._uniquifier}`;
 
-        this._overlay.addEventListener('mouseenter', () => { this._overlayEntered = true; this.updatePointers(); });
-        this._overlay.addEventListener('mouseleave', () => { this._overlayEntered = false; this.updatePointers(); });
-        this._frame.frameElement.addEventListener('mouseenter', () => { this._frameEntered = true; this.updatePointers(); });
-        this._frame.frameElement.addEventListener('mouseleave', () => { this._frameEntered = false; this.updatePointers(); });
+        this._overlay.addEventListener('mouseenter', () => { console.log("+overlay"); this._overlayEntered = true; this.updatePointers(); });
+        this._overlay.addEventListener('mouseleave', () => { console.log("-overlay"); this._overlayEntered = false; this.updatePointers(); });
+        this._frame.frameElement.addEventListener('mouseenter', () => { console.log("+frame"); this._frameEntered = true; this.updatePointers(); });
+        this._frame.frameElement.addEventListener('mouseleave', () => { console.log("-frame"); this._frameEntered = false; this.updatePointers(); });
 
         this.updatePointers();
     }
 
+    private static _baseDockStyle(id: string) {
+        return `
+        html > body > div#dock_${id} {
+            position: absolute;
+            pointer-events: none;
+        }
+        html > body > div#dock_${id}.outside_${id} {
+            background: transparent;
+        }
+        html > body > div#dock_${id}.inside_${id} {
+            background: linear-gradient(180deg, rgba(2,0,36,0.2) 0%, rgba(0,212,255,0) 100%);
+        }
+
+        html > body > div#dock_${id} > iframe#iframe_${id} { 
+            position: absolute;
+            user-select: none;
+        }
+        html > body > div#dock_${id}.outside_${id} > iframe#iframe_${id} { 
+            pointer-events: none;
+            opacity: 0.8;
+            filter: drop-shadow(0px 5px 5px rgba(2,0,36,0.2));
+        }
+        html > body > div#dock_${id}.inside_${id} > iframe#iframe_${id} { 
+            pointer-events: all;
+            opacity: inherit;
+            filter: drop-shadow(0px 5px 5px rgba(2,0,36,0.8));
+        }
+
+        html > body > div#dock_${id} > div#overlay_${id} {
+            position: absolute;
+            user-select: none;
+        }
+        html > body > div#dock_${id}.outside_${id} > div#overlay_${id} {
+            pointer-events: all;
+        }
+        html > body > div#dock_${id}.inside_${id} > div#overlay_${id} {
+            pointer-events: none;
+        }
+        `;
+    }
+
     private updatePointers() {
         const inside = this._overlayEntered || this._frameEntered;
-        this._div.style.pointerEvents = 'none';
-        if (inside) {
-            this._overlay.style.pointerEvents = 'none';
-            this._frame.frameElement.style.pointerEvents = 'all';
-            this._frame.frameElement.style.opacity = 'inherit';
-            this._frame.frameElement.style.filter = "drop-shadow(0px 5px 5px rgba(2,0,36,0.8))";
-            this._div.style.background = 'linear-gradient(180deg, rgba(2,0,36,0.2) 0%, rgba(0,212,255,0) 100%)';
-        } else {
-            this._overlay.style.pointerEvents = 'all';
-            this._frame.frameElement.style.pointerEvents = 'none';
-            this._frame.frameElement.style.opacity = '0.8';
-            this._frame.frameElement.style.filter = "drop-shadow(0px 5px 5px rgba(2,0,36,0.2))";
-            this._div.style.background = 'transparent';
-        }
+        this._div.className = inside ? `inside_${this._uniquifier}` : `outside_${this._uniquifier}`;
+        // this._div.style.pointerEvents = 'none';
+        // if (inside) {
+        //     this._overlay.style.pointerEvents = 'none';
+        //     this._frame.frameElement.style.pointerEvents = 'all';
+        //     this._frame.frameElement.style.opacity = 'inherit';
+        //     this._frame.frameElement.style.filter = "drop-shadow(0px 5px 5px rgba(2,0,36,0.8))";
+        //     this._div.style.background = 'linear-gradient(180deg, rgba(2,0,36,0.2) 0%, rgba(0,212,255,0) 100%)';
+        // } else {
+        //     this._overlay.style.pointerEvents = 'all';
+        //     this._frame.frameElement.style.pointerEvents = 'none';
+        //     this._frame.frameElement.style.opacity = '0.8';
+        //     this._frame.frameElement.style.filter = "drop-shadow(0px 5px 5px rgba(2,0,36,0.2))";
+        //     this._div.style.background = 'transparent';
+        // }
 
         console.log("inside = ", inside);
     }
