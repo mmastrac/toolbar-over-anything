@@ -2,28 +2,16 @@ import { Frame } from './frame';
 
 export enum DockPosition {
     NW_H = 0,
-    NNW,
-    N,
-    NNE,
-    NE_H,
+    NNW, N, NNE, NE_H,
 
     NE_V = 5,
-    ENE,
-    E,
-    ESE,
-    SE_V,
+    ENE, E, ESE, SE_V,
 
     SE_H = 10,
-    SSE,
-    S,
-    SSW,
-    SW_H,
+    SSE, S, SSW, SW_H,
 
     SW_V = 15,
-    WSW,
-    W,
-    WNW,
-    NW_V,
+    WSW, W, WNW, NW_V,
 }
 
 export enum ScreenEdge {
@@ -167,7 +155,7 @@ export class Dock {
         this._div.append(this._overlay, this._style);
         document.body.appendChild(this._div);
 
-        this._frame = new Frame(this._div, this._loadCallback, (r) => {
+        this._frame = new Frame(this._div, () => { this._loadCallback(); this.updatePosition(); }, (r) => {
             console.log("Rect = ", r);
             this._overlay.style.top = `${r.top}px`;
             this._overlay.style.left = `${r.left}px`;
@@ -187,16 +175,15 @@ export class Dock {
     }
 
     private static _baseDockStyle(id: string) {
+        // High selectivity base selector
         const base = `html > body > div#dock_${id}`;
+
         return `
         ${base} {
             position: fixed;
             pointer-events: none;
             transition: background 1s;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
+            inset: 0 0 0 0;
         }
         ${base}::before {
             background: linear-gradient(180deg, rgba(2,0,36,0.2) 0%, rgba(0,212,255,0) 100%);
@@ -280,14 +267,27 @@ export class Dock {
         const m = metrics(this._dockPosition);
         const classes = [];
         
-        classes.push(...this.c(
+        classes.push(
             this.isInside() ? 'inside' : 'outside', 
             m.edge,
             m.justification.h,
             m.justification.v,
-            m.orientation));
+            m.orientation);
         
-        this._div.className = classes.join(' ');
+        // Update both the div and the iframe body with the new class list
+        this._div.className = this.c(...classes).join(' ');
+        if (this._frame && this._frame.loaded) {
+            this._frame.body.className = classes.join(' ');
+        }
+    }
+
+    get dockPosition() {
+        return this._dockPosition;
+    }
+
+    set dockPosition(value) {
+        this._dockPosition = value;
+        this.updatePosition();
     }
 
     get frame() {

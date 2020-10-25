@@ -18,28 +18,35 @@
                     body {
                         font: 10pt Arial;
                     }
-                    table {
+                    div.table {
                         background-color: lightgray;
                         border: 1px solid darkgray;
                         user-select: none;
                         transition: padding 0.25s;
                         padding: 0;
                         font-size: inherit;
+                        display: table;
                     }
-                    table:hover {
+                    div.table:hover {
                         padding: 0 10em 0 10em;
                     }
-                    td {
+                    div.table span {
                         width: 1em;
+                        padding: 0.2em;
                         text-align: center;
                     }
-                    td:hover {
+                    div.table span {
+                        display: table-cell;
+                    }
+                    div.table span:hover {
                         background-color: red;
                     }
                 </style>
-                <table>
-                    <tr><td>Options:</td><td>a</td><td>b</td><td>c</td></tr>
-                </table>`;
+                <div class="table">
+                    <span>a</span>
+                    <span>b</span>
+                    <span>c</span>
+                </div>`;
                 toolbar.visible = true;
             });
         </script>

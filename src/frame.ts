@@ -77,6 +77,10 @@ export class Frame {
         }
     }
 
+    get loaded() {
+        return this._isLoaded;
+    }
+
     get frameElement(): HTMLIFrameElement {
         return this._iframe;
     }
