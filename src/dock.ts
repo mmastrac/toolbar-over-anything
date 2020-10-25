@@ -1,10 +1,136 @@
 import { Frame } from './frame';
 
 export enum DockPosition {
-    NORTH,
-    EAST,
-    SOUTH,
-    WEST,
+    NW_H = 0,
+    NNW,
+    N,
+    NNE,
+    NE_H,
+
+    NE_V = 5,
+    ENE,
+    E,
+    ESE,
+    SE_V,
+
+    SE_H = 10,
+    SSE,
+    S,
+    SSW,
+    SW_H,
+
+    SW_V = 15,
+    WSW,
+    W,
+    WNW,
+    NW_V,
+}
+
+export enum ScreenEdge {
+    NORTH = "screen-edge-north",
+    EAST = "screen-edge-east",
+    SOUTH = "screen-edge-south",
+    WEST = "screen-edge-west",
+}
+
+export enum Orientation {
+    H = "orientation-horizontal",
+    V = "orientation-vertical",
+}
+
+export enum JustificationH {
+    EAST = "justify-horizontal-east",
+    CENTER = "justify-horizontal-center",
+    WEST = "justify-horizontal-west",
+}
+
+export enum JustificationV {
+    NORTH = "justify-vertical-north",
+    MIDDLE = "justify-vertical-middle",
+    SOUTH = "justify-vertical-south",
+}
+
+function screenEdge(pos: DockPosition): ScreenEdge {
+    switch (~~(pos / 5)) {
+        case 0: return ScreenEdge.NORTH;
+        case 1: return ScreenEdge.EAST;
+        case 2: return ScreenEdge.SOUTH;
+        case 3: return ScreenEdge.WEST;
+    }
+
+    throw "Unexpected value";
+}
+
+function orientation(pos: DockPosition): Orientation {
+    switch (screenEdge(pos)) {
+        case ScreenEdge.NORTH:
+        case ScreenEdge.SOUTH:
+            return Orientation.V;
+        default:
+            return Orientation.H;
+    }
+}
+
+function justificationH(pos: DockPosition): JustificationH {
+    switch (pos) {
+        case DockPosition.NE_H:
+            return JustificationH.EAST;
+        case DockPosition.NW_H:
+            return JustificationH.WEST;
+        case DockPosition.SE_H:
+            return JustificationH.EAST;
+        case DockPosition.SW_H:
+            return JustificationH.WEST;
+    }
+
+    const edge = screenEdge(pos);
+    switch (edge) {
+        case ScreenEdge.EAST:
+            return JustificationH.EAST;
+        case ScreenEdge.WEST:
+            return JustificationH.WEST;
+        case ScreenEdge.NORTH:
+            return JustificationH.CENTER;            
+        case ScreenEdge.SOUTH:
+            return JustificationH.CENTER;            
+        }
+}
+
+function justificationV(pos: DockPosition): JustificationV {
+    switch (pos) {
+        case DockPosition.NE_V:
+            return JustificationV.NORTH;
+        case DockPosition.NW_V:
+            return JustificationV.NORTH;
+        case DockPosition.SE_V:
+            return JustificationV.SOUTH;
+        case DockPosition.SW_V:
+            return JustificationV.SOUTH;
+    }
+
+    const edge = screenEdge(pos);
+    switch (edge) {
+        case ScreenEdge.EAST:
+            return JustificationV.MIDDLE;
+        case ScreenEdge.WEST:
+            return JustificationV.MIDDLE;
+        case ScreenEdge.NORTH:
+            return JustificationV.NORTH;            
+        case ScreenEdge.SOUTH:
+            return JustificationV.SOUTH;            
+    }
+}
+
+function metrics(position: DockPosition) {
+    return {
+        position,
+        edge: screenEdge(position),
+        justification: {
+            h: justificationH(position),
+            v: justificationV(position),
+        },
+        orientation: orientation(position),
+    };
 }
 
 export class Dock {
@@ -19,7 +145,7 @@ export class Dock {
     private _overlayEntered: boolean = false;
     private _frameEntered: boolean = false;
 
-    private _dockPosition: DockPosition = DockPosition.NORTH;
+    private _dockPosition: DockPosition = DockPosition.N;
     private _uniquifier;
 
     constructor(private _document: HTMLDocument, private _loadCallback: () => void) {
@@ -61,13 +187,18 @@ export class Dock {
     }
 
     private static _baseDockStyle(id: string) {
+        const base = `html > body > div#dock_${id}`;
         return `
-        html > body > div#dock_${id} {
+        ${base} {
             position: fixed;
             pointer-events: none;
             transition: background 1s;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
         }
-        html > body > div#dock_${id}::before {
+        ${base}::before {
             background: linear-gradient(180deg, rgba(2,0,36,0.2) 0%, rgba(0,212,255,0) 100%);
             content: '';
             position: absolute;
@@ -78,67 +209,85 @@ export class Dock {
             display: block;
             transition: opacity 0.2s;
         }
-        html > body > div#dock_${id}.outside_${id}::before {
+        ${base}.outside_${id}::before {
             opacity: 0;
         }
-        html > body > div#dock_${id}.inside_${id}::before {
+        ${base}.inside_${id}::before {
             opacity: 1;
         }
 
-        html > body > div#dock_${id} > iframe#iframe_${id} { 
+        ${base} > iframe#iframe_${id} { 
             position: absolute;
             user-select: none;
         }
-        html > body > div#dock_${id}.outside_${id} > iframe#iframe_${id} { 
+        ${base}.outside_${id} > iframe#iframe_${id} { 
             pointer-events: none;
             opacity: 0.8;
             filter: drop-shadow(0px 5px 5px rgba(2,0,36,0.2));
         }
-        html > body > div#dock_${id}.inside_${id} > iframe#iframe_${id} { 
+        ${base}.inside_${id} > iframe#iframe_${id} { 
             pointer-events: all;
             opacity: inherit;
             filter: drop-shadow(0px 5px 5px rgba(2,0,36,0.8));
         }
 
-        html > body > div#dock_${id} > div#overlay_${id} {
+        ${base} > div#overlay_${id} {
             position: absolute;
             user-select: none;
         }
-        html > body > div#dock_${id}.outside_${id} > div#overlay_${id} {
+        ${base}.outside_${id} > div#overlay_${id} {
             pointer-events: all;
         }
-        html > body > div#dock_${id}.inside_${id} > div#overlay_${id} {
+        ${base}.inside_${id} > div#overlay_${id} {
             pointer-events: none;
+        }
+        ${base}.${ScreenEdge.NORTH}_${id} {
+            bottom: auto;
+        }
+        ${base}.${ScreenEdge.SOUTH}_${id} {
+            top: auto;
+        }
+        ${base}.${ScreenEdge.EAST}_${id} {
+            right: auto;
+        }
+        ${base}.${ScreenEdge.WEST}_${id} {
+            left: auto;
         }
         `;
     }
 
+    private c(...s: string[]): string[] {
+        return s.map((s) => `${s}_${this._uniquifier}`);
+    }
+
+    private isInside() {
+        return this._overlayEntered || this._frameEntered;
+    }
+
     private updatePointers() {
-        const inside = this._overlayEntered || this._frameEntered;
-        this._div.className = inside ? `inside_${this._uniquifier}` : `outside_${this._uniquifier}`;
+        const inside = this.isInside();
+        if (inside) {
+            this._div.classList.remove(...this.c('outside'));
+            this._div.classList.add(...this.c('inside'));
+        } else {
+            this._div.classList.add(...this.c('outside'));
+            this._div.classList.remove(...this.c('inside'));
+        }
         console.log("inside = ", inside);
     }
 
     private updatePosition() {
-        if (this._dockPosition != DockPosition.SOUTH)
-            this._div.style.top = '0px';
-        else
-            this._div.style.top = 'auto';
-
-        if (this._dockPosition != DockPosition.WEST)
-            this._div.style.left = '0px';
-        else
-            this._div.style.left = 'auto';
-
-        if (this._dockPosition != DockPosition.EAST)
-            this._div.style.right = '0px';
-        else
-            this._div.style.right = 'auto';
-
-        if (this._dockPosition != DockPosition.NORTH)
-            this._div.style.bottom = '0px';
-        else
-            this._div.style.bottom = 'auto';
+        const m = metrics(this._dockPosition);
+        const classes = [];
+        
+        classes.push(...this.c(
+            this.isInside() ? 'inside' : 'outside', 
+            m.edge,
+            m.justification.h,
+            m.justification.v,
+            m.orientation));
+        
+        this._div.className = classes.join(' ');
     }
 
     get frame() {
