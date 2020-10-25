@@ -63,14 +63,26 @@ export class Dock {
     private static _baseDockStyle(id: string) {
         return `
         html > body > div#dock_${id} {
-            position: absolute;
+            position: fixed;
             pointer-events: none;
+            transition: background 1s;
         }
-        html > body > div#dock_${id}.outside_${id} {
-            background: transparent;
-        }
-        html > body > div#dock_${id}.inside_${id} {
+        html > body > div#dock_${id}::before {
             background: linear-gradient(180deg, rgba(2,0,36,0.2) 0%, rgba(0,212,255,0) 100%);
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            display: block;
+            transition: opacity 0.2s;
+        }
+        html > body > div#dock_${id}.outside_${id}::before {
+            opacity: 0;
+        }
+        html > body > div#dock_${id}.inside_${id}::before {
+            opacity: 1;
         }
 
         html > body > div#dock_${id} > iframe#iframe_${id} { 
@@ -104,21 +116,6 @@ export class Dock {
     private updatePointers() {
         const inside = this._overlayEntered || this._frameEntered;
         this._div.className = inside ? `inside_${this._uniquifier}` : `outside_${this._uniquifier}`;
-        // this._div.style.pointerEvents = 'none';
-        // if (inside) {
-        //     this._overlay.style.pointerEvents = 'none';
-        //     this._frame.frameElement.style.pointerEvents = 'all';
-        //     this._frame.frameElement.style.opacity = 'inherit';
-        //     this._frame.frameElement.style.filter = "drop-shadow(0px 5px 5px rgba(2,0,36,0.8))";
-        //     this._div.style.background = 'linear-gradient(180deg, rgba(2,0,36,0.2) 0%, rgba(0,212,255,0) 100%)';
-        // } else {
-        //     this._overlay.style.pointerEvents = 'all';
-        //     this._frame.frameElement.style.pointerEvents = 'none';
-        //     this._frame.frameElement.style.opacity = '0.8';
-        //     this._frame.frameElement.style.filter = "drop-shadow(0px 5px 5px rgba(2,0,36,0.2))";
-        //     this._div.style.background = 'transparent';
-        // }
-
         console.log("inside = ", inside);
     }
 

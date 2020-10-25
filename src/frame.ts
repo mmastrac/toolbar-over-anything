@@ -60,15 +60,11 @@ export class Frame {
         const holder = this.contentDocument.createElement('div');
         body.appendChild(holder);
 
-        this._resizeObserver = new ResizeObserver(entries => {
-            for (const entry of entries) {
-                if (entry.target === holder) {
-                    console.log("Resized", holder.getBoundingClientRect());
-                    this._resizeCallback(holder.getBoundingClientRect());
-                }
-            }
+        this._resizeObserver = new ResizeObserver(_ => {
+            this._resizeCallback(holder.getBoundingClientRect());
         });
         this._resizeObserver.observe(holder);
+        this._resizeObserver.observe(this._iframe);
         this._loadCallback();
 
         // Trigger an initial resize based on the content added in loadCallback
