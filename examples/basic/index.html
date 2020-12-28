@@ -11,7 +11,7 @@
     </head>
     <body>
         <script>
-            const toolbar = new toa.Toolbar(toa.DockPosition.NORTH, (toolbar) => {
+            const toolbar = new toa.Toolbar(toa.DockPosition.S, (toolbar) => {
                 const root = toolbar.rootNode;
                 root.innerHTML = `
                 <style>
@@ -27,7 +27,7 @@
                         font-size: inherit;
                         display: table;
                     }
-                    div.table:hover {
+                    body.orientation-horizontal div.table:hover {
                         padding: 0 10em 0 10em;
                     }
                     div.table span {
@@ -35,7 +35,7 @@
                         padding: 0.2em;
                         text-align: center;
                     }
-                    div.table span {
+                    body.orientation-horizontal div.table span {
                         display: table-cell;
                     }
                     div.table span:hover {

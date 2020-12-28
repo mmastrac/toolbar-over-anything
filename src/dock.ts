@@ -53,9 +53,9 @@ function orientation(pos: DockPosition): Orientation {
     switch (screenEdge(pos)) {
         case ScreenEdge.NORTH:
         case ScreenEdge.SOUTH:
-            return Orientation.V;
-        default:
             return Orientation.H;
+        default:
+            return Orientation.V;
     }
 }
 
@@ -133,10 +133,10 @@ export class Dock {
     private _overlayEntered: boolean = false;
     private _frameEntered: boolean = false;
 
-    private _dockPosition: DockPosition = DockPosition.N;
+    private _dockPosition;
     private _uniquifier;
 
-    constructor(private _document: HTMLDocument, private _loadCallback: () => void) {
+    constructor(private _document: HTMLDocument, position: DockPosition, private _loadCallback: () => void) {
         // This is overkill for a unique ID
         const array = new Uint8Array(8);
         window.crypto.getRandomValues(array);
@@ -144,6 +144,7 @@ export class Dock {
 
         this._div = _document.createElement('div');
         this._div.id = `dock_${this._uniquifier}`;
+        this._dockPosition = position;
         this.updatePosition();
 
         this._overlay = _document.createElement('div');

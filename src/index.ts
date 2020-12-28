@@ -1,14 +1,14 @@
 import { Frame } from './frame';
-import { Dock, ScreenEdge } from './dock';
+import { Dock, DockPosition } from './dock';
 
-export { ScreenEdge as DockPosition } from './dock';
+export { DockPosition } from './dock';
 
 export class Toolbar {
     private _frame: Frame;
     private _dock: Dock;
 
-    constructor(private _position: ScreenEdge, private _loadCallback: (_: Toolbar) => void) {
-        this._dock = new Dock(document, () => _loadCallback(this));
+    constructor(private _position: DockPosition, private _loadCallback: (_: Toolbar) => void) {
+        this._dock = new Dock(document, _position, () => _loadCallback(this));
         this._frame = this._dock.frame;
     }
 
