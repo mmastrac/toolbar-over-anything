@@ -3,6 +3,7 @@ import external from 'rollup-plugin-peer-deps-external'
 import resolve from 'rollup-plugin-node-resolve'
 import { eslint } from 'rollup-plugin-eslint'
 import json from 'rollup-plugin-json'
+import serve from 'rollup-plugin-serve'
 
 import pkg from './package.json'
 
@@ -30,6 +31,7 @@ export default {
       rollupCommonJSResolveHack: true,
       clean: true,
       tsconfig: './tsconfig.json',
-    })
+    }),
+    serve('examples'),
   ],
 }

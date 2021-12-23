@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "rollup -c -w",
+    "start": "rollup --config --watch",
     "compile": "node_modules/.bin/tsc"
   },
   "repository": {
@@ -26,6 +26,7 @@
     "rollup-plugin-json": "^4.0.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-peer-deps-external": "^2.2.3",
+    "rollup-plugin-serve": "^1.1.0",
     "rollup-plugin-typescript": "^1.0.1",
     "rollup-plugin-typescript2": "^0.28.0",
     "tslib": "^2.0.3",
