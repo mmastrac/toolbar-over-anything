@@ -11,44 +11,57 @@
     </head>
     <body>
         <script>
-            const toolbar = new toa.Toolbar(toa.DockPosition.N, (toolbar) => {
-                const root = toolbar.rootNode;
-                root.innerHTML = `
-                <style>
-                    body {
-                        font: 10pt Arial;
-                    }
-                    div.table {
-                        background-color: lightgray;
-                        border: 1px solid darkgray;
-                        user-select: none;
-                        transition: padding 0.25s;
-                        padding: 0;
-                        font-size: inherit;
-                        display: table;
-                    }
-                    body.orientation-horizontal div.table:hover {
-                        padding: 0 10em 0 10em;
-                    }
-                    div.table span {
-                        width: 1em;
-                        padding: 0.2em;
-                        text-align: center;
-                    }
-                    body.orientation-horizontal div.table span {
-                        display: table-cell;
-                    }
-                    div.table span:hover {
-                        background-color: red;
-                    }
-                </style>
-                <div class="table">
-                    <span>a</span>
-                    <span>b</span>
-                    <span>c</span>
-                </div>`;
-                toolbar.visible = true;
-            });
+            const dir = location.search.split('dir=')[1].toUpperCase();
+            if (dir) {
+                const position = toa.DockPosition[dir] || toa.DockPosition[dir + "_H"];
+                const toolbar = new toa.Toolbar(position, (toolbar) => {
+                    const root = toolbar.rootNode;
+                    root.innerHTML = `
+                    <style>
+                        body {
+                            font: 10pt Arial;
+                        }
+                        div.table {
+                            background-color: lightgray;
+                            border: 1px solid darkgray;
+                            user-select: none;
+                            transition: padding 0.25s;
+                            padding: 0;
+                            font-size: inherit;
+                            display: table;
+                        }
+                        body.orientation-horizontal div.table:hover {
+                            padding: 0 10em 0 10em;
+                        }
+                        body.orientation-horizontal div.table span {
+                            display: table-cell;
+                        }
+                        body.orientation-vertical div.table:hover {
+                            padding: 10em 0 10em 0;
+                        }
+                        body.orientation-vertical div.table span {
+                            display: block;
+                        }
+                        div.table span {
+                            width: 1em;
+                            height: 1em;
+                            padding: 0.2em;
+                            text-align: center;
+                        }
+                        div.table span:hover {
+                            background-color: red;
+                        }
+                    </style>
+                    <div class="table">
+                        <span>a</span>
+                        <span>b</span>
+                        <span>c</span>
+                    </div>`;
+                    toolbar.visible = true;
+                });
+            } else {
+                document.body.style.display = 'none';
+            }
         </script>
 
     <p>
